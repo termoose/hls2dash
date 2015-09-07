@@ -1,4 +1,4 @@
 Hls2dash
 ========
 
-** TODO: Add description **
+Converts HLS playlists (.m3u8) into MPEG-DASH playlists (.mpd)
