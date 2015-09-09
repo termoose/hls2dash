@@ -17,12 +17,24 @@ defmodule Hls2dash do
   end
 
   def to_dash(data) do
-    {:XPD, %{xmlns: "urn:mpeg:dash:schema:mpd:2011",
-             profiles: "urn:mpeg:dash:profile:full:2011",
-             minBufferTime: "PT1.5S"},
-     [{:Period, "test"}]
-    }
-    |> XmlBuilder.generate
+		element(:XPD, %{xmlns: "urn:mpeg:dash:schema:mpd:2011"}, [
+					element(:Period, %{duration: "PT30S"}, [
+								element(:BaseURL, "main/"),
+								element(:AdaptationSet, %{mimeType: "video/mp2t"}, [
+											element(:BaseURL, "video/"),
+											element(:Representation, %{id: "720p", bandwidth: "3200000", width: "1280", height: "720"}, [
+														element(:BaseURL, "720p/"),
+														element(:SegmentList, %{timescale: "90000", duration: "5400000"}, [
+																	element(:SegmentURL, %{media: "segment01.ts"}),
+																	element(:SegmentURL, %{media: "segment02.ts"}),
+																	element(:SegmentURL, %{media: "segment03.ts"}),
+														])
+											])
+								])
+					])
+		])
+		|> XmlBuilder.generate
+		|> IO.puts
   end
 
   def get_baseurl(url) do
