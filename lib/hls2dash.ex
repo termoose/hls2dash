@@ -12,29 +12,25 @@ defmodule Hls2dash do
     |> Stream.filter(&is_link?/1)
     |> Stream.map(&remove_newline/1)
     |> Stream.map(&to_playlist/1)
-    #|> Stream.map(&get_segments/1)
+    |> Stream.map(&to_dash/1)
     |> Enum.map(fn(x) -> x end)
   end
 
-  def to_dash(data) do
-		element(:XPD, %{xmlns: "urn:mpeg:dash:schema:mpd:2011"}, [
-					element(:Period, %{duration: "PT30S"}, [
-								element(:BaseURL, "main/"),
-								element(:AdaptationSet, %{mimeType: "video/mp2t"}, [
-											element(:BaseURL, "video/"),
-											element(:Representation, %{id: "720p", bandwidth: "3200000", width: "1280", height: "720"}, [
-														element(:BaseURL, "720p/"),
-														element(:SegmentList, %{timescale: "90000", duration: "5400000"}, [
-																	element(:SegmentURL, %{media: "segment01.ts"}),
-																	element(:SegmentURL, %{media: "segment02.ts"}),
-																	element(:SegmentURL, %{media: "segment03.ts"}),
-														])
-											])
-								])
-					])
-		])
-		|> XmlBuilder.generate
-		|> IO.puts
+  def to_dash(%Playlist{base: base_url, segments: segment_list}) do
+    element(:XPD, %{xmlns: "urn:mpeg:dash:schema:mpd:2011"}, [
+          element(:BaseURL, base_url),
+          element(:Period, %{}, [
+                element(:AdaptationSet, %{mimeType: "video/mp2t"}, [
+                      element(:Representation, %{id: "720p", bandwidth: "3200000", width: "1280", height: "720"}, [
+                            element(:SegmentList, %{duration: "1"},
+                                    Enum.map(segment_list,
+                                      fn(segment) -> element(:SegmentURL, %{media: segment}) end))
+											    ])
+								    ])
+					    ])
+		    ])
+    |> XmlBuilder.generate
+    |> IO.puts
   end
 
   def get_baseurl(url) do
