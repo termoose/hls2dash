@@ -27,7 +27,6 @@ defmodule Hls2dash do
 					    ])
 		    ])
     |> XmlBuilder.generate
-    |> IO.puts
   end
 
   def get_baseurl(url) do
