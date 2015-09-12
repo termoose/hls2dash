@@ -5,15 +5,12 @@ defmodule Hls2dash do
     defstruct base: "", segments: []
   end
   
-  def parse do
-    stream = File.stream!("playlist.m3u8")
+  def parse(m3u8_url) do
+    playlists = get_segments(m3u8_url)
+    |> Enum.filter(&is_link?/1)
+    |> Enum.map(&remove_newline/1)
 
-    stream
-    |> Stream.filter(&is_link?/1)
-    |> Stream.map(&remove_newline/1)
-    |> Stream.map(&to_playlist/1)
-    |> Stream.map(&to_dash/1)
-    |> Enum.map(fn(x) -> x end)
+    hd(playlists) |> to_playlist |> to_dash
   end
 
   def to_dash(%Playlist{base: base_url, segments: segment_list}) do
@@ -52,6 +49,7 @@ defmodule Hls2dash do
   def is_link?(line) do
     case line do
       "#" <> _rest -> false
+      "" -> false
       _ -> true
     end
   end
